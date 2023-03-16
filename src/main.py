@@ -10,7 +10,7 @@ def prepare_filenames():
     # arguments check
     n_args = len(sys.argv)
     if n_args < 2 or n_args > 3:
-        raise Exception("ERROR: Invalid argument number \n Usage: python main.py input_filename [output_director]")
+        raise Exception("ERROR: Invalid argument number \n Usage: python main.py input_filename [output_directory]")
     in_filename = sys.argv[1]
 
     if n_args == 3:
@@ -40,7 +40,7 @@ if __name__ == "__main__":
 
     # reading main dataframe
     df = pd.read_csv(input_filename, sep=';', index_col=0, skiprows=3, header=None)
-    print(df)
+
     # resetting rows and column indexes
     # df.reset_index(inplace=True, drop=True)
     df.columns = range(df.shape[1])
@@ -49,6 +49,9 @@ if __name__ == "__main__":
     weights = pd.read_csv("../resources/TOPSIS_01.csv", sep=';', nrows=1,
                           header=None, index_col=0, decimal=',').squeeze()
     weights.reset_index(inplace=True, drop=True)
+    if weights.sum() != 1:
+        print("ERROR: weights do not sum to 1")
+        sys.exit(1)
 
     # reading signs as pandas Series
     signs = pd.read_csv("../resources/TOPSIS_01.csv", sep=';', skiprows=1,
@@ -87,3 +90,4 @@ if __name__ == "__main__":
 
     # saving output to Excel file
     ranked.to_excel(output_filename)
+    print("Report file generated at " + output_filename)
