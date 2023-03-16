@@ -10,7 +10,7 @@ def prepare_filenames():
     # arguments check
     n_args = len(sys.argv)
     if n_args < 2 or n_args > 3:
-        raise Exception("ERROR: Invalid argument number \n Usage: python main.py input_filename [output_directory]")
+        raise Exception("ERROR: Invalid argument number \nUsage: ./topsis_solver.sh input_filename [output_directory]")
     in_filename = sys.argv[1]
 
     if n_args == 3:
@@ -46,7 +46,7 @@ if __name__ == "__main__":
     df.columns = range(df.shape[1])
 
     # reading weights as pandas Series
-    weights = pd.read_csv("../resources/TOPSIS_01.csv", sep=';', nrows=1,
+    weights = pd.read_csv(input_filename, sep=';', nrows=1,
                           header=None, index_col=0, decimal=',').squeeze()
     weights.reset_index(inplace=True, drop=True)
     if weights.sum() != 1:
@@ -54,7 +54,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # reading signs as pandas Series
-    signs = pd.read_csv("../resources/TOPSIS_01.csv", sep=';', skiprows=1,
+    signs = pd.read_csv(input_filename, sep=';', skiprows=1,
                         nrows=1, header=None, index_col=0, dtype='str').squeeze()
     signs.reset_index(inplace=True, drop=True)
 
