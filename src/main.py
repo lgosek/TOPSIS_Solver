@@ -1,6 +1,6 @@
 import sys
 import os
-import posixpath
+# import posixpath
 import pandas as pd
 import numpy as np
 from datetime import datetime
@@ -16,7 +16,7 @@ def prepare_filenames():
     if n_args == 3:
         out_dir = sys.argv[2]
     else:
-        out_dir = "."
+        out_dir = ".."
 
     if not os.path.exists(in_filename):
         raise Exception("ERROR: Input file does not exist")
@@ -26,7 +26,7 @@ def prepare_filenames():
     # creating unique output name
     now = datetime.now()
     out_filename = "ranking_" + str(now).replace(" ", "_").replace("-", "_").replace(":", "_").split(".")[0] + ".xlsx"
-    out = posixpath.join(out_dir, out_filename)
+    out = os.path.join(out_dir, out_filename)
 
     return in_filename, out
 
@@ -90,4 +90,4 @@ if __name__ == "__main__":
 
     # saving output to Excel file
     ranked.to_excel(output_filename)
-    print("Report file generated at " + output_filename)
+    print("Report file generated at " + os.path.abspath(output_filename))
