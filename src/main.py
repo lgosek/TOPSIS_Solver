@@ -16,7 +16,7 @@ def prepare_filenames():
     if n_args == 3:
         out_dir = sys.argv[2]
     else:
-        out_dir = ".."
+        out_dir = os.path.dirname(in_filename)
 
     if not os.path.exists(in_filename):
         raise Exception("ERROR: Input file does not exist")
@@ -25,7 +25,7 @@ def prepare_filenames():
 
     # creating unique output name
     now = datetime.now()
-    out_filename = "ranking_" + str(now).replace(" ", "_").replace("-", "_").replace(":", "_").split(".")[0] + ".xlsx"
+    out_filename = "report_" + str(now).replace(" ", "_").replace("-", "_").replace(":", "_").split(".")[0] + ".xlsx"
     out = os.path.join(out_dir, out_filename)
 
     return in_filename, out
