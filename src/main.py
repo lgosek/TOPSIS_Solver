@@ -73,15 +73,22 @@ if __name__ == "__main__":
 
     # reading main dataframe
     # noinspection PyTypeChecker
-    df = pd.read_csv(buffer, sep=';', index_col=0, skiprows=3, header=None, encoding_errors='replace')
+    df = pd.read_csv(buffer, sep=';', index_col=0, skiprows=3, header=None, encoding_errors='replace', decimal=',')
 
     # resetting rows and column indexes
     df.columns = range(df.shape[1])
 
+    # handling csv export error
+    df.dropna(how='all', inplace=True, axis=0)
+    df.dropna(how='all', inplace=True, axis=1)
+
     # checking for missing/invalid data
     if np.any(pd.isna(df)):
         handle_error("ERROR: missing data in: main table")
-    if not np.all(df.dtypes == 'int64'):
+
+    try:
+        df = df.astype('float64')
+    except ValueError:
         handle_error("ERROR: invalid data type in: main table")
 
     # reading weights as pandas Series
@@ -92,7 +99,8 @@ if __name__ == "__main__":
     weights.reset_index(inplace=True, drop=True)
 
     # checking for missing/invalid data
-    if np.any(pd.isna(weights)):
+    weights.dropna(inplace=True)
+    if len(weights) != df.shape[1]:
         handle_error("ERROR: missing data in: weights")
     if not np.all(weights.dtypes == 'float64'):
         handle_error("ERROR: invalid data type in: weights")
@@ -107,7 +115,8 @@ if __name__ == "__main__":
     signs.reset_index(inplace=True, drop=True)
 
     # checking for missing/invalid data
-    if np.any(pd.isna(signs)):
+    signs.dropna(inplace=True)
+    if len(signs) != df.shape[1]:
         handle_error("ERROR: missing data in: criteria signs")
     if not np.all([s == '+' or s == '-' for s in signs]):
         handle_error("ERROR: invalid character in: criteria signs")
@@ -143,5 +152,5 @@ if __name__ == "__main__":
     ranked = ci.sort_values(["CI"], ascending=False)
 
     # saving output to Excel file
-    # ranked.to_excel(output_filename)
+    ranked.to_excel(output_filename)
     print("Report file generated at " + os.path.abspath(output_filename))
