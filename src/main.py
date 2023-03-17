@@ -32,6 +32,11 @@ def prepare_filenames():
     return in_filename, out
 
 
+def handle_error(msg):
+    print(msg)
+    sys.exit(1)
+
+
 def prepare_input_buffer(filename):
     """
     Function deals with blank lines and encoding errors in input file
@@ -64,22 +69,33 @@ if __name__ == "__main__":
     # resetting rows and column indexes
     df.columns = range(df.shape[1])
     # print(df)
+    if np.any(pd.isna(df)):
+        handle_error("ERROR: missing data in: main table")
+    if not np.all(df.dtypes == 'int64'):
+        handle_error("ERROR: invalid data type in: main table")
 
     # reading weights as pandas Series
     buffer.seek(0)
     weights = pd.read_csv(buffer, sep=';', nrows=1,
                           header=None, index_col=0, decimal=',', encoding_errors='replace').squeeze()
     weights.reset_index(inplace=True, drop=True)
+    if np.any(pd.isna(weights)):
+        handle_error("ERROR: missing data in: weights")
+    if not np.all(weights.dtypes == 'float64'):
+        handle_error("ERROR: invalid data type in: weights")
     if weights.sum() != 1:
-        print("ERROR: weights do not sum to 1")
-        sys.exit(1)
+        handle_error("ERROR: weights do not sum to 1")
     # print(weights)
 
     # reading signs as pandas Series
     buffer.seek(0)
     signs = pd.read_csv(buffer, sep=';', skiprows=1,
-                        nrows=1, header=None, index_col=0, dtype='str', encoding_errors='replace').squeeze()
+                        nrows=1, header=None, index_col=0, encoding_errors='replace').squeeze()
     signs.reset_index(inplace=True, drop=True)
+    if np.any(pd.isna(signs)):
+        handle_error("ERROR: missing data in: criteria signs")
+    if not np.all([s == '+' or s == '-' for s in signs]):
+        handle_error("ERROR: invalid character in: criteria signs")
     # print(signs)
 
     # calculating squared root of sum of squares for each column
@@ -113,5 +129,5 @@ if __name__ == "__main__":
     ranked = ci.sort_values(["CI"], ascending=False)
 
     # saving output to Excel file
-    ranked.to_excel(output_filename)
+    # ranked.to_excel(output_filename)
     print("Report file generated at " + os.path.abspath(output_filename))
