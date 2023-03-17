@@ -4,6 +4,7 @@ import os
 import pandas as pd
 import numpy as np
 from datetime import datetime
+from io import StringIO
 
 
 def prepare_filenames():
@@ -31,6 +32,22 @@ def prepare_filenames():
     return in_filename, out
 
 
+def prepare_input_buffer(filename):
+    """
+    Function deals with blank lines and encoding errors in input file
+    :param filename: path to file to read from
+    :return: StringIO buffer with cleaned up file content
+    """
+    io = StringIO()
+
+    with open(filename, 'r', errors='replace') as r:
+        for line in r:
+            if line.strip():
+                io.write(line)
+    io.seek(0)
+    return io
+
+
 if __name__ == "__main__":
     try:
         input_filename, output_filename = prepare_filenames()
@@ -38,25 +55,32 @@ if __name__ == "__main__":
         print(e)
         sys.exit(1)
 
+    # preparing file buffer
+    buffer = prepare_input_buffer(input_filename)
+
     # reading main dataframe
-    df = pd.read_csv(input_filename, sep=';', index_col=0, skiprows=3, header=None)
+    df = pd.read_csv(buffer, sep=';', index_col=0, skiprows=3, header=None, encoding_errors='replace')
 
     # resetting rows and column indexes
-    # df.reset_index(inplace=True, drop=True)
     df.columns = range(df.shape[1])
+    # print(df)
 
     # reading weights as pandas Series
-    weights = pd.read_csv(input_filename, sep=';', nrows=1,
-                          header=None, index_col=0, decimal=',').squeeze()
+    buffer.seek(0)
+    weights = pd.read_csv(buffer, sep=';', nrows=1,
+                          header=None, index_col=0, decimal=',', encoding_errors='replace').squeeze()
     weights.reset_index(inplace=True, drop=True)
     if weights.sum() != 1:
         print("ERROR: weights do not sum to 1")
         sys.exit(1)
+    # print(weights)
 
     # reading signs as pandas Series
-    signs = pd.read_csv(input_filename, sep=';', skiprows=1,
-                        nrows=1, header=None, index_col=0, dtype='str').squeeze()
+    buffer.seek(0)
+    signs = pd.read_csv(buffer, sep=';', skiprows=1,
+                        nrows=1, header=None, index_col=0, dtype='str', encoding_errors='replace').squeeze()
     signs.reset_index(inplace=True, drop=True)
+    # print(signs)
 
     # calculating squared root of sum of squares for each column
     root_sum_squared = np.sqrt((df**2).sum(axis=0))
