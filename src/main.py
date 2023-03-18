@@ -104,7 +104,7 @@ if __name__ == "__main__":
         handle_error("ERROR: missing data in: weights")
     if not np.all(weights.dtypes == 'float64'):
         handle_error("ERROR: invalid data type in: weights")
-    if weights.sum() != 1:
+    if round(weights.sum(), 10) != 1.0:
         handle_error("ERROR: weights do not sum to 1")
 
     # reading signs as pandas Series
